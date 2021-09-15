@@ -16,17 +16,15 @@ domain = get_command_line_argument
 # File.readlines reads a file and returns an
 # array of string, where each element is a line
 # https://www.rubydoc.info/stdlib/core/IO:readlines
-dns_raw = File.readlines("zone.txt")
+dns_raw = File.readlines("zone")
 
 def parse_dns(dns_raw)
   dns_hash = Hash.new
+  #Creat a Hash for the DNS raw
   dns_raw.each do |x|
     if (x[0]!="#" && !(x.strip.empty?))
       split_record = x.split(",")
-      type = split_record[0].to_s.strip
-      domain = split_record[1].strip
-      target = split_record[2].strip
-      dns_hash[domain] = {"type":type, "target":target }
+      dns_hash[split_record[1].strip] = {:type => split_record[0].strip, :target => split_record[2].strip }
     end
   end
   dns_hash
@@ -36,16 +34,13 @@ def resolve(dns_records, lookup_chain, domain)
   record = dns_records[domain]
   if (!record)
     lookup_chain.push("Error: Record not found for "+domain)
-
   elsif record[:type] == "CNAME"
     lookup_chain.push(record[:target])
     resolve(dns_records,lookup_chain,record[:target])
   elsif record[:type] == "A"
     lookup_chain.push( record[:target])
-
   else
     lookup_chain.push("Invalid record type for "+domain)
-
   end
   lookup_chain
 end
